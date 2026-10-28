@@ -514,6 +514,10 @@ function applyMetrics(data) {
   metricText('password-share', passwordShare);
   metricText('username', usernames[0]?.value || (usernames[0] ? '(blank)' : '—'));
   metricText('username-count', usernames[0] ? `${number.format(usernames[0].attempts)} attempts` : 'No username attempts');
+  const usernameShare = usernames[0] && loginAttempts > 0
+    ? `${((usernames[0].attempts / loginAttempts) * 100).toFixed(1)}% of all login attempts`
+    : loginAttempts > 0 ? 'No username attempts today' : 'No login attempts today';
+  metricText('username-share', usernameShare);
   document.querySelector('#metric-date').textContent = `${data.date_utc || 'UTC TODAY'}`;
   renderList('countries-list', countries, (item) => item.name || item.code || 'Unknown', countries[0]?.attempts || 1);
   renderList('usernames-list', usernames, (item) => item.value || '(blank)', usernames[0]?.attempts || 1);
@@ -604,3 +608,4 @@ refreshLiveAttacks();
 window.setInterval(refreshLiveAttacks, ACTIVITY_REFRESH_MS);
 refreshThreatIntel();
 window.setInterval(refreshThreatIntel, REFRESH_MS);
+
