@@ -39,8 +39,10 @@ site. Grafana and Loki listen on loopback only.
 
 `public_metrics.py` reads only aggregate SQL results and atomically writes
 `/var/www/cloudthreat/metrics.json` with mode `0644`. Nginx serves the static
-page and JSON file from the same origin. The browser refreshes the file every
-five minutes.
+page and JSON files from the same origin. The browser refreshes aggregate
+metrics every five minutes. A small activity exporter writes
+`/var/www/cloudthreat/activity.json` every 30 seconds; the browser polls that
+redacted login-event feed every 15 seconds.
 
 The public payload contains:
 
@@ -53,6 +55,11 @@ It contains no source address, session ID, raw password list, full command, or
 download URL. The top password is deliberately included because it is a stated
 observatory requirement. Do not add attacker profiles or raw events to this
 payload.
+
+The activity feed contains only the latest ten login event timestamps and a
+fixed success/failure category. It deliberately omits source addresses and
+submitted usernames/passwords. `public_activity.py` writes this feed atomically
+and is scheduled by `gci-public-activity.timer`.
 
 ## Monthly reports
 

@@ -21,11 +21,15 @@ top passwords and usernames and also must not be served from a public web root.
 
 ## Public data
 
-The site and `metrics.json` are public. The feed includes daily aggregates,
-country names, username counts, a single top-password aggregate, command-tool
-counts, and a daily event/source-count series. It never includes source IPs,
-session IDs, raw password lists, raw command strings, or download URLs.
+The site and its JSON endpoints are public. `metrics.json` includes daily
+aggregates, country names, username counts, a single top-password aggregate,
+command-tool counts, and a daily event/source-count series. `activity.json`
+contains up to ten recent Cowrie login event timestamps and a fixed event type,
+refreshed every 30 seconds. It never includes source IPs, usernames, submitted
+passwords, session IDs, raw command strings, or download URLs.
 
+The live activity list shows UTC event times and whether a login was accepted
+by the honeypot or rejected; it withholds the submitted identity and source.
 Attack playback is reconstructed from Cowrie event types but replaces
 credentials, usernames, commands, and URLs with redacted labels. The
 “weirdest attack” summary reports only a heuristic score and aggregate signals.

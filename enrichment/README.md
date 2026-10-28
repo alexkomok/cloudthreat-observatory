@@ -57,6 +57,11 @@ single most common password. It never exports source IPs, sessions, commands,
 or individual event records. Since the requested top password is intentionally
 public, its aggregate value is visible to page visitors.
 
+`public_activity.py` publishes a separate `activity.json` with the latest ten
+login event timestamps and fixed success/failure labels. It excludes source
+addresses, usernames, and submitted passwords. Its systemd timer updates the
+file every 30 seconds; the browser polls it every 15 seconds.
+
 The public feed also contains a 90-day daily event/source-count series and
 today's counts of command events invoking `wget`, `curl`, or `busybox`. The UI
 switches the chart between 7, 30, and 90 days. Raw command strings remain
@@ -88,3 +93,7 @@ The intended GCI paths are `/opt/gci-enrichment/public_metrics.py` and
 `gci-public-metrics.timer`. The page files are `index.html`, `styles.css`, and
 `app.js` in the workspace. Serve the page and JSON feed from the same origin so
 the browser can fetch the feed without cross-origin access.
+
+Install `public_activity.py`, `gci-public-activity.service`, and
+`gci-public-activity.timer` alongside the existing public metrics exporter,
+then enable and start `gci-public-activity.timer`.

@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=6" />
+    <link rel="stylesheet" href="styles.css?v=7" />
   </head>
   <body>
     <div class="app-shell">
@@ -66,6 +66,12 @@
           <article class="metric-card"><div class="metric-head"><span>TOP PASSWORD</span><span class="metric-icon muted">⌁</span></div><div class="metric-value password-value" data-metric="password">—</div><div class="metric-foot"><span class="metric-note" data-metric="password-count">Aggregate only</span><span class="metric-period">TODAY</span></div></article>
         </section>
 
+        <section class="panel live-attacks-panel" id="live-attacks" aria-label="Recent live attacks">
+          <div class="panel-header"><div><div class="panel-kicker">LATEST SENSOR EVENTS</div><h2><span class="live-attacks-dot"></span> Live attacks</h2></div><span class="range-label" id="activity-updated">CONNECTING</span></div>
+          <ol class="live-attack-list" id="live-attack-list" aria-live="polite"><li class="empty-row">Waiting for recent login activity</li></ol>
+          <div class="live-attacks-foot">Recent Cowrie login events · UTC · source addresses and submitted credentials are withheld</div>
+        </section>
+
         <article class="panel timeline-panel" id="timeline" aria-label="Attack timeline">
           <div class="panel-header"><div><div class="panel-kicker">HISTORICAL ACTIVITY</div><h2>Attack timeline</h2></div><div class="range-switch" role="group" aria-label="Timeline range"><button class="range-btn active" type="button" data-timeline-range="7">7D</button><button class="range-btn" type="button" data-timeline-range="30">30D</button><button class="range-btn" type="button" data-timeline-range="90">90D</button></div></div>
           <div class="timeline-summary"><strong id="timeline-total">—</strong><span id="timeline-summary-label">attacks · last 7 days</span><span class="chart-legend"><i></i> DAILY ATTACK EVENTS</span></div>
@@ -95,6 +101,6 @@
         <footer class="page-footer"><a class="footer-brand" href="#top"><span class="brand-mark small"><span></span><span></span><span></span></span> CloudThreat Observatory</a><span>Independent project · Built for curiosity and security awareness</span><a href="https://db-ip.com" rel="noopener noreferrer" target="_blank">GeoIP by DB-IP</a><a href="/reports/">Monthly reports</a><a href="#top" class="back-top">BACK TO TOP ↑</a></footer>
       </main>
     </div>
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=8"></script>
   </body>
 </html>

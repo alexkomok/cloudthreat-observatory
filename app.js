@@ -1,12 +1,14 @@
 const METRICS_URL = window.OBSERVATORY_METRICS_URL || './metrics.json';
+const ACTIVITY_URL = window.OBSERVATORY_ACTIVITY_URL || './activity.json';
 const REFRESH_MS = 5 * 60 * 1000;
+const ACTIVITY_REFRESH_MS = 15 * 1000;
 const number = new Intl.NumberFormat();
 
 const dateLabel = new Intl.DateTimeFormat('en', { month: 'short', day: '2-digit', year: 'numeric', timeZone: 'UTC' });
 document.querySelector('#today-date').textContent = `${dateLabel.format(new Date()).toUpperCase()} · UTC`;
 
 const views = {
-  overview: [document.querySelector('#overview'), document.querySelector('#feed-notice'), document.querySelector('.live-metrics'), document.querySelector('#timeline'), document.querySelector('#weirdest')],
+  overview: [document.querySelector('#overview'), document.querySelector('#feed-notice'), document.querySelector('.live-metrics'), document.querySelector('#live-attacks'), document.querySelector('#timeline'), document.querySelector('#weirdest')],
   rankings: [document.querySelector('#rankings'), document.querySelector('#malware-tools')],
   playback: [document.querySelector('#playback')],
   about: [document.querySelector('#about')]
@@ -320,5 +322,56 @@ async function refreshMetrics() {
   }
 }
 
+function renderLiveAttacks(events, generatedAt) {
+  const list = document.querySelector('#live-attack-list');
+  list.replaceChildren();
+  if (!events.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-row';
+    empty.textContent = 'No login attempts recorded in the last 24 hours';
+    list.append(empty);
+  }
+  for (const event of events.slice(0, 10)) {
+    const item = document.createElement('li');
+    item.className = 'live-attack-row';
+    const time = document.createElement('time');
+    time.className = 'live-attack-time';
+    const timestamp = new Date(event.time_utc);
+    time.dateTime = Number.isNaN(timestamp.valueOf()) ? '' : timestamp.toISOString();
+    time.textContent = Number.isNaN(timestamp.valueOf())
+      ? '—'
+      : new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }).format(timestamp);
+    const label = document.createElement('span');
+    label.className = `live-attack-label ${event.kind === 'success' ? 'success' : ''}`;
+    label.textContent = event.kind === 'success' ? 'Honeypot login accepted' : 'SSH login attempt rejected';
+    const detail = document.createElement('span');
+    detail.className = 'live-attack-detail';
+    detail.textContent = 'credentials withheld';
+    item.append(time, label, detail);
+    list.append(item);
+  }
+  const update = generatedAt ? new Date(generatedAt) : new Date();
+  document.querySelector('#activity-updated').textContent = `UPDATED ${new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }).format(update)}`;
+}
+
+async function refreshLiveAttacks() {
+  try {
+    const response = await fetch(`${ACTIVITY_URL}${ACTIVITY_URL.includes('?') ? '&' : '?'}_=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { Accept: 'application/json' }
+    });
+    if (!response.ok) throw new Error(`Activity feed returned HTTP ${response.status}`);
+    const data = await response.json();
+    if (!data || !Array.isArray(data.events)) throw new Error('Activity feed schema is invalid');
+    renderLiveAttacks(data.events, data.generated_at_utc);
+  } catch (error) {
+    const badge = document.querySelector('#activity-updated');
+    if (badge.textContent === 'CONNECTING') badge.textContent = 'UNAVAILABLE';
+    console.warn('Could not refresh live attack activity:', error.message);
+  }
+}
+
 refreshMetrics();
 window.setInterval(refreshMetrics, REFRESH_MS);
+refreshLiveAttacks();
+window.setInterval(refreshLiveAttacks, ACTIVITY_REFRESH_MS);

@@ -9,7 +9,7 @@
 | SQLite database | `/var/lib/gci-enrichment/attacks.sqlite` |
 | Offline GeoIP files | `/var/lib/gci-enrichment/geoip/current/` |
 | Private daily analytics | `/var/lib/gci-enrichment/metrics/` |
-| Public site and current feed | `/var/www/cloudthreat/` |
+| Public site and JSON feeds | `/var/www/cloudthreat/` |
 | Public monthly reports | `/var/www/cloudthreat/reports/` |
 
 ## Service status
@@ -30,7 +30,8 @@ sudo journalctl -u gci-public-metrics.service --since today --no-pager
 
 The enrichment service runs continuously. A restart resumes from stored file
 offsets and deduplicates events by source-line hash. The public metrics timer
-runs every five minutes. GeoIP data updates monthly. Daily private analytics
+runs every five minutes; the redacted activity feed timer runs every 30 seconds.
+GeoIP data updates monthly. Daily private analytics
 run at 00:10 UTC. Monthly report generation runs at 00:30 UTC on the first day
 of each month.
 
