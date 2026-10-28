@@ -1,5 +1,6 @@
 const METRICS_URL = window.OBSERVATORY_METRICS_URL || './metrics.json';
 const ACTIVITY_URL = window.OBSERVATORY_ACTIVITY_URL || './activity.json';
+const THREAT_INTEL_URL = window.OBSERVATORY_THREAT_INTEL_URL || './threat-intel.json';
 const REFRESH_MS = 5 * 60 * 1000;
 const ACTIVITY_REFRESH_MS = 15 * 1000;
 const number = new Intl.NumberFormat();
@@ -10,6 +11,7 @@ document.querySelector('#today-date').textContent = `${dateLabel.format(new Date
 const views = {
   overview: [document.querySelector('#overview'), document.querySelector('#feed-notice'), document.querySelector('.live-metrics'), document.querySelector('#live-attacks'), document.querySelector('#timeline'), document.querySelector('#weirdest')],
   rankings: [document.querySelector('#rankings'), document.querySelector('#malware-tools')],
+  'threat-intel': [document.querySelector('#threat-intel')],
   playback: [document.querySelector('#playback')],
   about: [document.querySelector('#about')]
 };
@@ -134,6 +136,82 @@ function renderCommandTools(items) {
     count.textContent = `${number.format(item.commands || 0)} cmds`;
     row.append(rank, label, bar, count);
     list.append(row);
+  }
+}
+
+function formatObservedDate(value) {
+  if (!value) return 'Unknown';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.valueOf())) return 'Unknown';
+  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(parsed);
+}
+
+function renderThreatIntel(profiles, generatedAt) {
+  const list = document.querySelector('#threat-intel-list');
+  list.replaceChildren();
+  if (!profiles.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-row';
+    empty.textContent = 'No repeat sources recorded yet';
+    list.append(empty);
+  }
+  for (const [index, profile] of profiles.entries()) {
+    const item = document.createElement('li');
+    item.className = 'threat-profile';
+    const header = document.createElement('div');
+    header.className = 'threat-profile-header';
+    const rank = document.createElement('span');
+    rank.className = 'threat-rank';
+    rank.textContent = `#${String(index + 1).padStart(2, '0')}`;
+    const address = document.createElement('code');
+    address.className = 'threat-address';
+    address.textContent = profile.source_ip || 'Unknown address';
+    header.append(rank, address);
+    const details = document.createElement('dl');
+    details.className = 'threat-profile-details';
+    const asn = profile.cloud_provider
+      ? `${profile.cloud_provider}${profile.asn ? ` · AS${profile.asn}` : ''}`
+      : profile.asn_org
+        ? `${profile.asn ? `AS${profile.asn} · ` : ''}${profile.asn_org}`
+        : (profile.asn ? `AS${profile.asn}` : 'Unknown');
+    const fields = [
+      ['First seen', formatObservedDate(profile.first_seen)],
+      ['Last seen', formatObservedDate(profile.last_seen)],
+      ['Attempts', number.format(profile.attempt_count || 0)],
+      ['Country', profile.country_name || profile.country_code || 'Unknown'],
+      ['ASN / network', asn]
+    ];
+    for (const [labelText, valueText] of fields) {
+      const field = document.createElement('div');
+      field.className = 'threat-detail';
+      const label = document.createElement('dt');
+      label.textContent = labelText;
+      const value = document.createElement('dd');
+      value.textContent = valueText;
+      field.append(label, value);
+      details.append(field);
+    }
+    item.append(header, details);
+    list.append(item);
+  }
+  const updated = generatedAt ? new Date(generatedAt) : new Date();
+  document.querySelector('#threat-intel-updated').textContent = `UPDATED ${new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }).format(updated)}`;
+}
+
+async function refreshThreatIntel() {
+  try {
+    const response = await fetch(`${THREAT_INTEL_URL}${THREAT_INTEL_URL.includes('?') ? '&' : '?'}_=${Date.now()}`, {
+      cache: 'no-store',
+      headers: { Accept: 'application/json' }
+    });
+    if (!response.ok) throw new Error(`Threat Intel feed returned HTTP ${response.status}`);
+    const data = await response.json();
+    if (!data || !Array.isArray(data.repeat_offenders)) throw new Error('Threat Intel feed schema is invalid');
+    renderThreatIntel(data.repeat_offenders, data.generated_at_utc);
+  } catch (error) {
+    const badge = document.querySelector('#threat-intel-updated');
+    if (badge.textContent === 'CONNECTING') badge.textContent = 'UNAVAILABLE';
+    console.warn('Could not refresh Threat Intel profiles:', error.message);
   }
 }
 
@@ -378,3 +456,5 @@ refreshMetrics();
 window.setInterval(refreshMetrics, REFRESH_MS);
 refreshLiveAttacks();
 window.setInterval(refreshLiveAttacks, ACTIVITY_REFRESH_MS);
+refreshThreatIntel();
+window.setInterval(refreshThreatIntel, REFRESH_MS);

@@ -1,0 +1,22 @@
+[Unit]
+Description=Publish limited public repeat source profiles
+After=gci-enrichment.service
+
+[Service]
+Type=oneshot
+User=gci-enricher
+Group=gci-enricher
+ExecStart=/usr/bin/python3 /opt/gci-enrichment/public_threat_intel.py
+WorkingDirectory=/var/lib/gci-enrichment
+Environment=PYTHONDONTWRITEBYTECODE=1
+UMask=0022
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadOnlyPaths=/var/lib/gci-enrichment/attacks.sqlite
+ReadWritePaths=/var/www/cloudthreat

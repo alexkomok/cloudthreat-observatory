@@ -51,10 +51,18 @@ The public payload contains:
 - Daily counts of events invoking the tracked download tools.
 - One redacted session reconstruction and a daily unusual-session summary.
 
-It contains no source address, session ID, full command, or download URL. The
+`metrics.json` contains no source address, session ID, full command, or download URL. The
 top eight password values are deliberately included as aggregate rankings
 because they are a stated observatory requirement. Do not add attacker profiles
 or raw events to this payload.
+
+`public_threat_intel.py` writes the separate `/var/www/cloudthreat/threat-intel.json`
+projection. It contains up to 20 globally routable repeat sources with address,
+first/last seen, login-attempt count, country, ASN organization, and cloud-provider
+classification. It excludes passwords, usernames, session IDs, and raw events.
+The page labels these as observed network endpoints; enrichment is heuristic
+and does not identify an operator. `gci-public-threat-intel.timer` refreshes it
+every five minutes.
 
 The activity feed contains only the latest ten login event timestamps and a
 fixed success/failure category. It deliberately omits source addresses and

@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh public Threat Intel profiles every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30sec
+Unit=gci-public-threat-intel.service
+
+[Install]
+WantedBy=timers.target

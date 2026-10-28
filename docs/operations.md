@@ -26,12 +26,15 @@ Read service logs without displaying private event values:
 ```sh
 sudo journalctl -u gci-enrichment.service --since today --no-pager
 sudo journalctl -u gci-public-metrics.service --since today --no-pager
+sudo journalctl -u gci-public-activity.service --since today --no-pager
+sudo journalctl -u gci-public-threat-intel.service --since today --no-pager
 ```
 
 The enrichment service runs continuously. A restart resumes from stored file
 offsets and deduplicates events by source-line hash. The public metrics timer
 runs every five minutes; the redacted activity feed timer runs every 30 seconds.
-GeoIP data updates monthly. Daily private analytics
+The Threat Intel projection also refreshes every five minutes. GeoIP data updates
+monthly. Daily private analytics
 run at 00:10 UTC. Monthly report generation runs at 00:30 UTC on the first day
 of each month.
 

@@ -53,6 +53,8 @@ files independently. Promtail was removed; Alloy is the active collector.
 - `enrichment/daily_analytics.py`: private daily analytics snapshots.
 - `enrichment/public_metrics.py`: sanitized public feed, timeline, playback, and
   daily unusual-session selection.
+- `enrichment/public_threat_intel.py`: limited public projection of repeat
+  source profiles for the Threat Intel page.
 - `enrichment/monthly_report.py`: static aggregate report generator.
 - `enrichment/*.service`, `enrichment/*.timer`: systemd units and schedules.
 - `enrichment/nginx-cloudthreat.conf`: static web server configuration.
@@ -103,10 +105,13 @@ data, and enrichment. It is mode `0600` and owned by the dedicated
 `gci-enricher` account. `attacker_profiles` and `malware_commands` are private
 SQLite views.
 
-The public feed omits source addresses, session IDs, raw commands, and download
-URLs. The top eight password values and username rankings are published as
-aggregate counts. Playback labels redact
-credentials and command content. Monthly reports contain aggregates only.
+The metrics and live activity feeds omit source addresses, session IDs, raw
+commands, and download URLs. The separate Threat Intel page publishes up to 20
+globally routable repeat-source addresses with observed dates, login-attempt counts, and
+best-effort country/ASN enrichment. These are network endpoints, not verified
+operator identities. The top eight password values and username rankings are
+also published as aggregate counts. Playback labels redact credentials and
+command content. Monthly reports contain aggregates only.
 
 See [Data handling and security](docs/data-handling.md) for the full boundary.
 The current public endpoint uses HTTP; use TLS if a domain is attached or any

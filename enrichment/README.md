@@ -57,6 +57,12 @@ never exports source IPs, sessions, commands, or individual event records.
 Password values are untrusted honeypot submissions and are visible as daily
 aggregate rankings on the Daily rankings page.
 
+`public_threat_intel.py` creates a separate `threat-intel.json` endpoint with
+up to 20 repeat source profiles. It includes globally routable addresses,
+first/last seen, login-attempt counts, country, ASN organization, and best-effort cloud
+provider labels. It excludes usernames, passwords, sessions, and raw events.
+The Threat Intel page refreshes this projection every five minutes.
+
 `public_activity.py` publishes a separate `activity.json` with the latest ten
 login event timestamps and fixed success/failure labels. It excludes source
 addresses, usernames, and submitted passwords. Its systemd timer updates the
@@ -66,8 +72,9 @@ The public feed also contains a 90-day daily event/source-count series and
 today's counts of command events invoking `wget`, `curl`, or `busybox`. The UI
 switches the chart between 7, 30, and 90 days. Raw command strings remain
 private in SQLite. The `attacker_profiles` SQL view contains first/last seen,
-event and login counts, enrichment, and favorite password for each source IP;
-it is private and must never be added to the public feed.
+event and login counts, enrichment, and favorite password for each source IP.
+The SQL view remains private; the separate public projection never includes
+favorite passwords, usernames, or event records.
 
 `worker.py` maintains `command_tools` and a private `malware_commands` view.
 Schema migration 3 classifies existing command inputs once, then classifies new

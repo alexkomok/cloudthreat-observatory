@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=9" />
+    <link rel="stylesheet" href="styles.css?v=11" />
   </head>
   <body>
     <div class="app-shell">
@@ -22,6 +22,7 @@
         <nav class="side-nav" aria-label="Main navigation">
           <a class="nav-item active" href="#overview"><span class="nav-icon">◫</span> Overview</a>
           <a class="nav-item" href="#rankings"><span class="nav-icon">⌁</span> Daily rankings</a>
+          <a class="nav-item" href="#threat-intel"><span class="nav-icon">◉</span> Threat Intel</a>
           <a class="nav-item" href="#playback"><span class="nav-icon">▶</span> Attack playback</a>
           <a class="nav-item" href="#about"><span class="nav-icon">◎</span> About</a>
         </nav>
@@ -62,7 +63,7 @@
 
         <section class="metrics-grid live-metrics" aria-label="Today's attack metrics">
           <article class="metric-card metric-highlight"><div class="metric-head"><span>ATTACKS TODAY</span><span class="metric-icon">↗</span></div><div class="metric-value" data-metric="attacks">—</div><div class="metric-foot"><span class="metric-note">UTC day · Cowrie events</span><span class="metric-period" id="metric-date">TODAY</span></div><div class="sparkline"><svg viewBox="0 0 220 42" preserveAspectRatio="none" aria-hidden="true"><path d="M0 35 C15 34 16 28 27 31 S43 20 56 24 S73 11 84 20 S102 18 111 21 S126 7 138 16 S156 23 166 11 S180 20 191 8 S206 15 220 3" /></svg></div></article>
-          <article class="metric-card"><div class="metric-head"><span>UNIQUE SOURCES</span><span class="metric-icon muted">◎</span></div><div class="metric-value" data-metric="sources">—</div><div class="metric-foot"><span class="metric-note">Distinct source addresses</span><span class="metric-period">TODAY</span></div><div class="metric-bottom"><span class="data-footnote">Addresses are counted but never displayed.</span></div></article>
+          <article class="metric-card"><div class="metric-head"><span>UNIQUE SOURCES</span><span class="metric-icon muted">◎</span></div><div class="metric-value" data-metric="sources">—</div><div class="metric-foot"><span class="metric-note">Distinct source addresses</span><span class="metric-period">TODAY</span></div><div class="metric-bottom"><span class="data-footnote">Repeat source profiles appear in Threat Intel.</span></div></article>
           <article class="metric-card"><div class="metric-head"><span>TOP SOURCE COUNTRY</span><span class="metric-icon muted">◉</span></div><div class="metric-value country-value" data-metric="country">—</div><div class="metric-foot"><span class="metric-note" data-metric="country-count">Awaiting feed</span><span class="metric-period">TODAY</span></div></article>
           <article class="metric-card"><div class="metric-head"><span>TOP PASSWORD</span><span class="metric-icon muted">⌁</span></div><div class="metric-value password-value" data-metric="password">—</div><div class="metric-foot"><span class="metric-note" data-metric="password-count">Aggregate only</span><span class="metric-period">TODAY</span></div></article>
           <article class="metric-card"><div class="metric-head"><span>TOP USERNAME</span><span class="metric-icon muted">⌁</span></div><div class="metric-value username-value" data-metric="username">—</div><div class="metric-foot"><span class="metric-note" data-metric="username-count">Aggregate only</span><span class="metric-period">TODAY</span></div></article>
@@ -99,11 +100,18 @@
 
         <article class="panel command-tools-panel" id="malware-tools"><div class="panel-header"><div><div class="panel-kicker">COMMAND ACTIVITY</div><h2>Download tooling observed</h2></div><span class="range-label">UTC TODAY</span></div><p class="command-tools-copy">Cowrie command entries that invoke wget, curl, or busybox. Full commands remain in the private event store.</p><ol class="ranking-list tool-list" id="tools-list"><li class="empty-row">Waiting for live metrics</li></ol></article>
 
-        <section class="about-section" id="about"><div class="about-heading"><div class="panel-kicker">THE PROJECT</div><h2>Turning background noise<br />into <em>understanding.</em></h2></div><div class="about-copy"><p>Internet-facing services receive automated scans and login attempts. Cowrie records activity in an isolated honeypot; a local worker enriches and aggregates the events before this page receives summary metrics.</p><p>This public view contains aggregate rankings and redacted session playback. It does not show source IP addresses, raw credentials, full commands, or download URLs. Password rankings are aggregates of values submitted to the honeypot.</p></div><div class="architecture"><div class="arch-step"><span class="arch-number">01</span><span class="arch-symbol">⌁</span><strong>Collect</strong><small>Cowrie honeypot</small></div><span class="arch-arrow">→</span><div class="arch-step"><span class="arch-number">02</span><span class="arch-symbol">▤</span><strong>Enrich</strong><small>Local GeoIP data</small></div><span class="arch-arrow">→</span><div class="arch-step"><span class="arch-number">03</span><span class="arch-symbol">◷</span><strong>Analyze</strong><small>Private SQLite store</small></div><span class="arch-arrow">→</span><div class="arch-step"><span class="arch-number">04</span><span class="arch-symbol">◫</span><strong>Observe</strong><small>Public aggregates</small></div></div></section>
+        <section class="threat-intel-view" id="threat-intel" aria-label="Repeat attacker profiles">
+          <div class="threat-intel-heading"><div class="panel-kicker">OBSERVED SOURCE PROFILES</div><h1>Top repeat offenders</h1><p>Sources seen repeatedly by this Cowrie sensor, ranked by failed and successful login attempts. IP and network ownership data are observational signals and do not identify a person or prove who operated a host.</p></div>
+          <div class="threat-intel-meta"><span id="threat-intel-updated">CONNECTING</span><span>REFRESHES EVERY 5 MINUTES</span></div>
+          <ol class="threat-intel-list" id="threat-intel-list" aria-live="polite"><li class="empty-row">Loading repeat offender profiles</li></ol>
+          <p class="threat-intel-foot">IP addresses are shown as observed by the honeypot. ASN and cloud-provider labels use best-effort enrichment; network ownership can change.</p>
+        </section>
+
+        <section class="about-section" id="about"><div class="about-heading"><div class="panel-kicker">THE PROJECT</div><h2>Turning background noise<br />into <em>understanding.</em></h2></div><div class="about-copy"><p>Internet-facing services receive automated scans and login attempts. Cowrie records activity in an isolated honeypot; a local worker enriches and aggregates the events before this page receives summary metrics.</p><p>The Threat Intel page lists up to 20 globally routable source addresses seen in repeated login attempts, with country and ASN/hosting enrichment. An IP identifies a network endpoint, not a person, and network attribution may be inaccurate. Credentials, full commands, and download URLs remain private; password rankings are aggregates of values submitted to the honeypot.</p></div><div class="architecture"><div class="arch-step"><span class="arch-number">01</span><span class="arch-symbol">⌁</span><strong>Collect</strong><small>Cowrie honeypot</small></div><span class="arch-arrow">→</span><div class="arch-step"><span class="arch-number">02</span><span class="arch-symbol">▤</span><strong>Enrich</strong><small>Local GeoIP data</small></div><span class="arch-arrow">→</span><div class="arch-step"><span class="arch-number">03</span><span class="arch-symbol">◷</span><strong>Analyze</strong><small>Private SQLite store</small></div><span class="arch-arrow">→</span><div class="arch-step"><span class="arch-number">04</span><span class="arch-symbol">◫</span><strong>Observe</strong><small>Aggregates & profiles</small></div></div></section>
 
         <footer class="page-footer"><a class="footer-brand" href="#top"><span class="brand-mark small"><span></span><span></span><span></span></span> CloudThreat Observatory</a><span>Independent project · Built for curiosity and security awareness</span><a href="https://db-ip.com" rel="noopener noreferrer" target="_blank">GeoIP by DB-IP</a><a href="/reports/">Monthly reports</a><a href="#top" class="back-top">BACK TO TOP ↑</a></footer>
       </main>
     </div>
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=11"></script>
   </body>
 </html>
