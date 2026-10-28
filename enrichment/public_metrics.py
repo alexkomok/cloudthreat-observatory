@@ -132,6 +132,11 @@ def main() -> None:
             "SELECT COUNT(*), COUNT(DISTINCT source_ip) FROM attacks WHERE event_time >= ? AND event_time < ?",
             (start, end),
         ).fetchone()
+        login_attempts = db.execute(
+            """SELECT COUNT(*) FROM attacks WHERE event_time >= ? AND event_time < ?
+               AND eventid IN ('cowrie.login.failed', 'cowrie.login.success')""",
+            (start, end),
+        ).fetchone()[0]
         countries = [dict(row) for row in db.execute(
             """SELECT country_code AS code, country_name AS name, COUNT(*) AS attempts
                FROM attacks WHERE event_time >= ? AND event_time < ?
@@ -190,6 +195,7 @@ def main() -> None:
         "date_utc": day.isoformat(),
         "generated_at_utc": now.isoformat(timespec="seconds"),
         "attack_events": events,
+        "login_attempts": login_attempts,
         "unique_source_ips": sources,
         "top_countries": countries,
         "top_passwords": passwords,

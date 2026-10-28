@@ -366,6 +366,11 @@ function applyMetrics(data) {
   metricText('country-count', countries[0] ? `${number.format(countries[0].attempts)} attempts` : 'No country data');
   metricText('password', passwords[0]?.value || (passwords[0] ? '(blank)' : '—'));
   metricText('password-count', passwords[0] ? `${number.format(passwords[0].attempts)} attempts` : 'No password attempts');
+  const loginAttempts = Number(data.login_attempts) || 0;
+  const passwordShare = passwords[0] && loginAttempts > 0
+    ? `${((passwords[0].attempts / loginAttempts) * 100).toFixed(1)}% of all login attempts`
+    : loginAttempts > 0 ? 'No password attempts today' : 'No login attempts today';
+  metricText('password-share', passwordShare);
   metricText('username', usernames[0]?.value || (usernames[0] ? '(blank)' : '—'));
   metricText('username-count', usernames[0] ? `${number.format(usernames[0].attempts)} attempts` : 'No username attempts');
   document.querySelector('#metric-date').textContent = `${data.date_utc || 'UTC TODAY'}`;

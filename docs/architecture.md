@@ -46,7 +46,7 @@ redacted login-event feed every 15 seconds.
 
 The public payload contains:
 
-- Current UTC-day totals and top country/password/username/port rankings.
+- Current UTC-day totals, total login attempts, and top country/password/username/port rankings.
 - A daily count and unique-source count for each of the most recent 90 days.
 - Daily counts of events invoking the tracked download tools.
 - One redacted session reconstruction and a daily unusual-session summary.

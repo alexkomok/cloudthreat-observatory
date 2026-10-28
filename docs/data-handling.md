@@ -23,7 +23,8 @@ top passwords and usernames and also must not be served from a public web root.
 ## Public data
 
 The site and its JSON endpoints are public. `metrics.json` includes daily
-aggregates, country names, username counts, the top eight password aggregates,
+aggregates, total failed/successful login attempts, country names, username
+counts, the top eight password aggregates,
 command-tool counts, and a daily event/source-count series. `activity.json`
 contains up to ten recent Cowrie login event timestamps and a fixed event type,
 refreshed every 30 seconds. It never includes source IPs, usernames, submitted
@@ -43,7 +44,8 @@ identifiers, and raw command strings.
 Public top-password and username values are honeypot submissions, not verified
 credentials. Password aggregates are shown on the Daily rankings page. These
 values are untrusted input and must continue to be rendered as text, never HTML
-or executable content.
+or executable content. The overview's top-password percentage divides its
+count by all failed and successful login events for the current UTC day.
 
 Threat Intel IPs identify observed network endpoints, not people. ASN and
 provider labels are best-effort network attribution and can be stale or
