@@ -4,7 +4,7 @@ A small GCP-hosted honeypot and public observatory for unsolicited Internet
 traffic. Cowrie records SSH/Telnet interactions; a local Python worker enriches
 the events with offline country and ASN data; SQLite stores private event and
 attacker records; Alloy, Loki, and Grafana provide log search; and a separate
-static site publishes aggregate metrics.
+static site publishes aggregate metrics and redacted attack-session summaries.
 
 The observatory is served from the GCI VM at [http://35.212.201.111/](http://35.212.201.111/).
 It is a standalone GCI project and is not part of `alexkomok.clodhost.com` or
@@ -19,7 +19,8 @@ It is a standalone GCI project and is not part of `alexkomok.clodhost.com` or
   offsets in a private SQLite database.
 - Collects logs through Alloy into Loki for Grafana panels.
 - Publishes today’s aggregate counts and rankings, a 90-day event/source series,
-  redacted playback, a heuristic daily highlight, and static monthly reports.
+  a top-ten redacted session archive with summary counters, a featured attack,
+  and static monthly reports.
 - Refreshes the public metrics feed every five minutes.
 
 ## Architecture
@@ -51,8 +52,8 @@ files independently. Promtail was removed; Alloy is the active collector.
   rollups, command-tool classification, and profile view creation.
 - `enrichment/update_geoip.py`: monthly DB-IP Lite country and ASN updater.
 - `enrichment/daily_analytics.py`: private daily analytics snapshots.
-- `enrichment/public_metrics.py`: sanitized public feed, timeline, playback, and
-  daily unusual-session selection.
+- `enrichment/public_metrics.py`: sanitized public feed, daily session
+  statistics, top-ten session selection, and redacted timelines.
 - `enrichment/public_threat_intel.py`: limited public projection of repeat
   source profiles for the Threat Intel page.
 - `enrichment/monthly_report.py`: static aggregate report generator.
@@ -106,8 +107,9 @@ data, and enrichment. It is mode `0600` and owned by the dedicated
 SQLite views.
 
 The metrics and live activity feeds omit source addresses, session IDs, raw
-commands, and download URLs. The separate Threat Intel page publishes up to 20
-globally routable repeat-source addresses with observed dates, login-attempt counts, and
+commands, and download URLs. Session summaries contain only redacted event
+labels and counts. The separate Threat Intel page publishes up to 20 globally
+routable repeat-source addresses with observed dates, login-attempt counts, and
 best-effort country/ASN enrichment. These are network endpoints, not verified
 operator identities. The top eight password values and username rankings are
 also published as aggregate counts. Playback labels redact credentials and

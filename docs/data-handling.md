@@ -24,8 +24,9 @@ top passwords and usernames and also must not be served from a public web root.
 
 The site and its JSON endpoints are public. `metrics.json` includes daily
 aggregates, total failed/successful login attempts, country names, username
-counts, the top eight password aggregates,
-command-tool counts, and a daily event/source-count series. `activity.json`
+counts, the top eight password aggregates, command-tool counts, session statistics,
+and a daily event/source-count series. It also contains a top-ten session archive
+with redacted summaries and event timelines. `activity.json`
 contains up to ten recent Cowrie login event timestamps and a fixed event type,
 refreshed every 30 seconds. It never includes source IPs, usernames, submitted
 passwords, session IDs, raw command strings, or download URLs. The separate
@@ -35,9 +36,11 @@ and best-effort cloud-provider label.
 
 The live activity list shows UTC event times and whether a login was accepted
 by the honeypot or rejected; it withholds the submitted identity and source.
-Attack playback is reconstructed from Cowrie event types but replaces
-credentials, usernames, commands, and URLs with redacted labels. The
-“weirdest attack” summary reports only a heuristic score and aggregate signals.
+The session archive includes category, timing, event counts, summary statistics,
+and a collapsed timeline reconstructed from Cowrie event types. It contains no
+session IDs and replaces credentials, usernames, commands, and URLs with
+redacted labels. The featured-session summary reports only a heuristic score
+and aggregate signals.
 Monthly static reports omit source addresses, usernames, passwords, session
 identifiers, and raw command strings.
 

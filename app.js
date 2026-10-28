@@ -21,6 +21,9 @@ let playbackSteps = [];
 let playbackIndex = -1;
 let playbackTimer = null;
 let playbackSignature = '';
+let attackArchive = [];
+let selectedSessionIndex = -1;
+let selectedSessionFirstSeen = '';
 
 function navigateTo(hash, updateHistory = true) {
   const requestedId = hash.replace(/^#/, '');
@@ -245,19 +248,135 @@ function renderWeirdest(data) {
   const badge = document.querySelector('#weirdest-score');
   const foot = document.querySelector('#weirdest-foot');
   if (!data) {
-    title.textContent = 'No unusual session recorded today';
-    copy.textContent = 'The selector scores command-tool use, shell activity, honeypot logins, and rejected login attempts.';
+    title.textContent = 'No featured session yet';
+    copy.textContent = 'The featured attack is selected from today’s most interesting recorded sessions.';
     badge.textContent = 'NO MATCH';
     foot.textContent = 'Credentials, source addresses, and raw commands are withheld.';
     return;
   }
   title.textContent = data.title || 'Unusual session selected';
-  copy.textContent = data.reason || 'Selected by the daily behavior score.';
+  copy.textContent = data.reason || 'Selected from today’s session archive using observed activity signals.';
   badge.textContent = `SCORE ${number.format(data.score || 0)}`;
   const observed = data.observed_at_utc ? new Date(data.observed_at_utc) : null;
   const time = observed ? new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }).format(observed) : 'UTC';
   const tools = safeArray(data.download_tools);
   foot.textContent = `${number.format(data.event_count || 0)} events · observed ${time}${tools.length ? ` · tools: ${tools.join(', ')}` : ''}`;
+}
+
+function formatDuration(seconds) {
+  const value = Math.max(0, Number(seconds) || 0);
+  if (value < 60) return `${value}s`;
+  return `${Math.floor(value / 60)}m ${String(value % 60).padStart(2, '0')}s`;
+}
+
+function formatSessionTime(value) {
+  if (!value) return 'Time unknown';
+  const date = new Date(value);
+  if (Number.isNaN(date.valueOf())) return 'Time unknown';
+  return new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }).format(date);
+}
+
+function renderSelectedSession(session, index) {
+  selectedSessionIndex = index;
+  selectedSessionFirstSeen = session?.first_seen_utc || '';
+  document.querySelectorAll('.session-list-button').forEach((button) => {
+    const active = Number(button.dataset.sessionIndex) === index;
+    button.classList.toggle('selected', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  if (!session) {
+    document.querySelector('#selected-feature-label').textContent = 'FEATURED ATTACK OF THE DAY';
+    document.querySelector('#selected-title').textContent = 'No session recorded today';
+    document.querySelector('#selected-category').textContent = 'NO SESSION';
+    document.querySelector('#selected-category').className = 'category-badge';
+    document.querySelector('#selected-time').textContent = 'UTC TODAY';
+    document.querySelector('#selected-summary').textContent = 'No eligible Cowrie session is available for the current UTC day.';
+    document.querySelector('#summary-duration').textContent = '—';
+    document.querySelector('#summary-commands').textContent = '—';
+    document.querySelector('#summary-login').textContent = '—';
+    document.querySelector('#summary-downloads').textContent = '—';
+    document.querySelector('#summary-score').textContent = '—';
+    renderPlayback(null);
+    return;
+  }
+  document.querySelector('#selected-feature-label').textContent = index === 0 ? 'FEATURED ATTACK OF THE DAY' : 'SELECTED SESSION';
+  document.querySelector('#selected-title').textContent = session.title || 'Cowrie session';
+  const category = document.querySelector('#selected-category');
+  category.textContent = session.category_label || 'Activity';
+  category.className = `category-badge category-${session.category || 'activity'}`;
+  document.querySelector('#selected-time').textContent = `${formatSessionTime(session.first_seen_utc)} · ${number.format(session.event_count || 0)} logged events`;
+  document.querySelector('#selected-summary').textContent = session.summary || 'A redacted summary of observed session activity.';
+  document.querySelector('#summary-duration').textContent = formatDuration(session.duration_seconds);
+  document.querySelector('#summary-commands').textContent = number.format(session.commands || 0);
+  document.querySelector('#summary-login').textContent = session.login_successes
+    ? `Succeeded (${number.format(session.login_successes)})`
+    : session.login_failures ? `Rejected (${number.format(session.login_failures)})` : 'Not observed';
+  document.querySelector('#summary-downloads').textContent = session.downloads
+    ? number.format(session.downloads)
+    : session.download_tool_events ? `${number.format(session.download_tool_events)} attempted` : '0';
+  document.querySelector('#summary-score').textContent = `${number.format(session.score || 0)} / 99`;
+  document.querySelector('#playback-meta').textContent = `${number.format(session.steps?.length || 0)} TIMELINE EVENTS`;
+  renderPlayback(session);
+}
+
+function renderSessionArchive(data) {
+  const stats = data.session_stats || {};
+  document.querySelector('#sessions-today').textContent = number.format(stats.sessions_today || 0);
+  document.querySelector('#successful-logins').textContent = number.format(stats.successful_logins_today || 0);
+  document.querySelector('#malware-downloads').textContent = number.format(stats.file_downloads_today || 0);
+  document.querySelector('#unique-attackers').textContent = number.format(stats.unique_attackers_today || 0);
+  attackArchive = safeArray(data.attack_archive);
+  const list = document.querySelector('#session-list');
+  list.replaceChildren();
+  document.querySelector('#archive-count').textContent = stats.sessions_today
+    ? `TOP ${number.format(attackArchive.length)} OF ${number.format(stats.sessions_today)}`
+    : 'NO SESSIONS';
+  if (!attackArchive.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-row';
+    empty.textContent = 'No eligible sessions recorded today';
+    list.append(empty);
+    renderSelectedSession(null, -1);
+    return;
+  }
+  for (const [index, session] of attackArchive.entries()) {
+    const item = document.createElement('li');
+    item.className = 'session-list-item';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'session-list-button';
+    button.dataset.sessionIndex = String(index);
+    button.setAttribute('aria-pressed', 'false');
+    const top = document.createElement('span');
+    top.className = 'session-list-top';
+    const rank = document.createElement('span');
+    rank.className = 'session-rank';
+    rank.textContent = `#${String(index + 1).padStart(2, '0')}`;
+    const pill = document.createElement('span');
+    pill.className = `category-pill category-${session.category || 'activity'}`;
+    pill.textContent = session.category_label || 'Activity';
+    const time = document.createElement('time');
+    time.className = 'session-list-time';
+    time.dateTime = session.first_seen_utc || '';
+    time.textContent = formatSessionTime(session.first_seen_utc);
+    top.append(rank, pill, time);
+    const title = document.createElement('strong');
+    title.className = 'session-list-title';
+    title.textContent = session.title || 'Cowrie session';
+    const facts = document.createElement('span');
+    facts.className = 'session-list-facts';
+    facts.textContent = `${number.format(session.commands || 0)} commands · ${number.format(session.login_attempts || 0)} login attempts · score ${number.format(session.score || 0)}`;
+    button.append(top, title, facts);
+    button.addEventListener('click', () => {
+      stopPlayback();
+      renderSelectedSession(attackArchive[index], index);
+    });
+    item.append(button);
+    list.append(item);
+  }
+  const priorIndex = attackArchive.findIndex((session) => session.first_seen_utc === selectedSessionFirstSeen);
+  const nextIndex = priorIndex >= 0 ? priorIndex : 0;
+  renderSelectedSession(attackArchive[nextIndex], nextIndex);
 }
 
 function formatOffset(value) {
@@ -281,7 +400,7 @@ function showPlaybackStep(index) {
 }
 
 function renderPlayback(data) {
-  const signature = JSON.stringify(data?.steps || []);
+  const signature = JSON.stringify([data?.first_seen_utc || '', data?.steps || []]);
   if (signature === playbackSignature) return;
   playbackSignature = signature;
   stopPlayback();
@@ -294,41 +413,63 @@ function renderPlayback(data) {
     empty.className = 'empty-row';
     empty.textContent = 'No eligible session to replay today';
     list.append(empty);
-    document.querySelector('#playback-meta').textContent = 'NO SESSION';
+    document.querySelector('#playback-meta').textContent = 'NO TIMELINE';
     document.querySelector('#playback-clock').textContent = '00:00';
     toggle.disabled = true;
     return;
   }
   toggle.disabled = false;
-  document.querySelector('#playback-meta').textContent = `${number.format(data.event_count || playbackSteps.length)} EVENTS · ${formatOffset(data.duration_seconds)}`;
+  document.querySelector('#playback-meta').textContent = `${number.format(data.event_count || playbackSteps.length)} LOGGED EVENTS`;
   for (const [index, step] of playbackSteps.entries()) {
     const item = document.createElement('li');
     item.dataset.step = String(index);
     item.className = `playback-step step-${step.kind || 'activity'}`;
+    const main = document.createElement('div');
+    main.className = 'playback-step-main';
     const elapsed = document.createElement('span');
     elapsed.className = 'playback-offset';
     elapsed.textContent = formatOffset(step.offset_seconds);
     const text = document.createElement('span');
     text.className = 'playback-label';
     text.textContent = step.label;
-    item.append(elapsed, text);
+    main.append(elapsed, text);
+    item.append(main);
+    if (safeArray(step.children).length) {
+      const expand = document.createElement('button');
+      expand.className = 'step-expand';
+      expand.type = 'button';
+      expand.textContent = 'Expand';
+      expand.setAttribute('aria-expanded', 'false');
+      const children = document.createElement('ol');
+      children.className = 'playback-substeps';
+      children.hidden = true;
+      for (const child of step.children) {
+        const childRow = document.createElement('li');
+        const childOffset = document.createElement('time');
+        childOffset.textContent = formatOffset(child.offset_seconds);
+        const childText = document.createElement('span');
+        childText.textContent = child.label;
+        childRow.append(childOffset, childText);
+        children.append(childRow);
+      }
+      expand.addEventListener('click', () => {
+        const isExpanded = expand.getAttribute('aria-expanded') === 'true';
+        expand.setAttribute('aria-expanded', String(!isExpanded));
+        children.hidden = isExpanded;
+        expand.textContent = isExpanded ? 'Expand' : 'Collapse';
+      });
+      item.append(expand, children);
+    }
     item.addEventListener('click', () => {
       stopPlayback();
       showPlaybackStep(index);
     });
+    item.querySelector('.step-expand')?.addEventListener('click', (event) => event.stopPropagation());
     list.append(item);
   }
   showPlaybackStep(0);
 }
 
-document.querySelector('#playback-prev').addEventListener('click', () => {
-  stopPlayback();
-  showPlaybackStep(Math.max(0, playbackIndex - 1));
-});
-document.querySelector('#playback-next').addEventListener('click', () => {
-  stopPlayback();
-  showPlaybackStep(Math.min(playbackSteps.length - 1, playbackIndex + 1));
-});
 document.querySelector('#playback-toggle').addEventListener('click', () => {
   if (playbackTimer) {
     stopPlayback();
@@ -381,11 +522,11 @@ function applyMetrics(data) {
   renderCommandTools(safeArray(data.command_tools));
   renderTimeline();
   renderWeirdest(data.weirdest_attack);
-  renderPlayback(data.attack_playback);
+  renderSessionArchive(data);
   const updated = data.generated_at_utc ? new Date(data.generated_at_utc) : new Date();
   document.querySelector('#last-updated').textContent = new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }).format(updated);
   document.querySelector('#sensor-state').textContent = 'METRICS RECEIVED';
-  setStatus('live', `Metrics for ${data.date_utc || 'today'} UTC. Aggregate counts only; this page refreshes every five minutes.`);
+  setStatus('live', `Metrics for ${data.date_utc || 'today'} UTC. Session summaries are redacted; raw credentials, addresses, and commands are withheld. Refreshes every five minutes.`);
 }
 
 async function refreshMetrics() {

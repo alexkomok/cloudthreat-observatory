@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=14" />
   </head>
   <body>
     <div class="app-shell">
@@ -23,7 +23,7 @@
           <a class="nav-item active" href="#overview"><span class="nav-icon">◫</span> Overview</a>
           <a class="nav-item" href="#rankings"><span class="nav-icon">⌁</span> Daily rankings</a>
           <a class="nav-item" href="#threat-intel"><span class="nav-icon">◉</span> Threat Intel</a>
-          <a class="nav-item" href="#playback"><span class="nav-icon">▶</span> Attack playback</a>
+          <a class="nav-item" href="#playback"><span class="nav-icon">▶</span> Attack sessions</a>
           <a class="nav-item" href="#about"><span class="nav-icon">◎</span> About</a>
         </nav>
         <div class="side-label side-label-gap">SENSOR</div>
@@ -59,7 +59,7 @@
           <div class="intro-aside"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core"><span>CT</span></div><span class="orbit-tag tag-one">OBSERVE</span><span class="orbit-tag tag-two">UNDERSTAND</span></div>
         </section>
 
-        <div class="notice" id="feed-notice" role="status"><span class="notice-icon">i</span><p><strong>Waiting for live metrics.</strong> This page reads an aggregate-only <code>metrics.json</code> feed from the same web origin and checks it every five minutes.</p><span class="notice-code">NO SAMPLE DATA</span></div>
+        <div class="notice" id="feed-notice" role="status"><span class="notice-icon">i</span><p><strong>Waiting for live metrics.</strong> The same-origin metrics feed includes daily aggregates and redacted session summaries, refreshed every five minutes.</p><span class="notice-code">NO SAMPLE DATA</span></div>
 
         <section class="metrics-grid live-metrics" aria-label="Today's attack metrics">
           <article class="metric-card metric-highlight"><div class="metric-head"><span>ATTACKS TODAY</span><span class="metric-icon">↗</span></div><div class="metric-value" data-metric="attacks">—</div><div class="metric-foot"><span class="metric-note">UTC day · Cowrie events</span><span class="metric-period" id="metric-date">TODAY</span></div><div class="sparkline"><svg viewBox="0 0 220 42" preserveAspectRatio="none" aria-hidden="true"><path d="M0 35 C15 34 16 28 27 31 S43 20 56 24 S73 11 84 20 S102 18 111 21 S126 7 138 16 S156 23 166 11 S180 20 191 8 S206 15 220 3" /></svg></div></article>
@@ -82,13 +82,39 @@
           <div class="timeline-axis"><span id="timeline-start">—</span><span>UTC</span><span id="timeline-end">—</span></div>
         </article>
 
-        <article class="panel weirdest-panel" id="weirdest"><div class="panel-header"><div><div class="panel-kicker">AUTOMATED HIGHLIGHT</div><h2>Today’s weirdest attack</h2></div><span class="range-label" id="weirdest-score">AWAITING FEED</span></div><strong class="weirdest-title" id="weirdest-title">No session selected</strong><p class="weirdest-copy" id="weirdest-copy">A daily heuristic selects unusual behavior from completed honeypot activity.</p><div class="weirdest-foot" id="weirdest-foot">Credentials, source addresses, and raw commands are withheld.</div></article>
+        <article class="panel weirdest-panel" id="weirdest"><div class="panel-header"><div><div class="panel-kicker">AUTOMATED HIGHLIGHT</div><h2>Featured attack of the day</h2></div><span class="range-label" id="weirdest-score">AWAITING FEED</span></div><strong class="weirdest-title" id="weirdest-title">No session selected</strong><p class="weirdest-copy" id="weirdest-copy">The most interesting session is selected from today’s observed activity.</p><div class="weirdest-foot" id="weirdest-foot">Credentials, source addresses, and raw commands are withheld.</div><a class="text-button weirdest-browse" href="#playback">Browse attack sessions →</a></article>
 
-        <section class="panel playback-panel" id="playback" aria-label="Redacted attack playback">
-          <div class="panel-header"><div><div class="panel-kicker">SESSION RECONSTRUCTION</div><h2>Attack playback</h2></div><span class="range-label" id="playback-meta">WAITING FOR SESSION</span></div>
-          <p class="command-tools-copy">A redacted sequence reconstructed from Cowrie events. Credentials, source addresses, and full shell commands are withheld.</p>
-          <div class="playback-toolbar"><button class="text-button" id="playback-prev" type="button">← Previous</button><button class="play-control" id="playback-toggle" type="button" disabled>▶ Play session</button><button class="text-button" id="playback-next" type="button">Next →</button><span class="playback-clock" id="playback-clock">00:00</span></div>
-          <ol class="playback-steps" id="playback-steps"><li class="empty-row">Waiting for an eligible session</li></ol>
+        <section class="sessions-page" id="playback" aria-label="Attack session archive">
+          <div class="sessions-heading"><div class="panel-kicker">INTERACTIVE ATTACK ARCHIVE</div><h1>Attack sessions</h1><p>Explore a selection of today’s most interesting Cowrie sessions. Select a story to inspect its summary and redacted event timeline. Scores and categories are exploration heuristics, not confirmed threat-actor or malware-family attributions.</p></div>
+          <div class="session-stats" aria-label="Today's session statistics">
+            <article class="session-stat-card"><span>SESSIONS TODAY</span><strong id="sessions-today">—</strong></article>
+            <article class="session-stat-card"><span>SUCCESSFUL LOGINS</span><strong id="successful-logins">—</strong></article>
+            <article class="session-stat-card"><span>DOWNLOADS OBSERVED</span><strong id="malware-downloads">—</strong></article>
+            <article class="session-stat-card"><span>UNIQUE ATTACKERS</span><strong id="unique-attackers">—</strong></article>
+          </div>
+          <div class="session-category-legend" aria-label="Session categories"><span class="category-pill category-successful_login">Successful login</span><span class="category-pill category-password_guessing">Password guessing</span><span class="category-pill category-privilege_escalation">Privilege escalation</span><span class="category-pill category-malware_download">File download</span><span class="category-pill category-download_attempt">Download attempt</span><span class="category-pill category-reconnaissance">Reconnaissance</span></div>
+          <div class="attack-browser">
+            <aside class="session-list-pane panel">
+              <div class="panel-header"><div><div class="panel-kicker">TOP 10 MOST INTERESTING</div><h2>Browse sessions</h2></div><span class="range-label" id="archive-count">WAITING</span></div>
+              <ol class="session-list" id="session-list"><li class="empty-row">Waiting for today's session archive</li></ol>
+            </aside>
+            <article class="session-detail-pane panel" aria-label="Selected attack session">
+              <div class="featured-session-heading"><div><div class="panel-kicker" id="selected-feature-label">FEATURED ATTACK OF THE DAY</div><h2 id="selected-title">Waiting for a session</h2></div><span class="category-badge" id="selected-category">—</span></div>
+              <div class="selected-session-time" id="selected-time">UTC TODAY</div>
+              <p class="selected-session-summary" id="selected-summary">Redacted session summary will appear here.</p>
+              <div class="session-summary-grid" aria-label="Session summary">
+                <div><span>DURATION</span><strong id="summary-duration">—</strong></div>
+                <div><span>COMMANDS</span><strong id="summary-commands">—</strong></div>
+                <div><span>LOGIN</span><strong id="summary-login">—</strong></div>
+                <div><span>DOWNLOADS</span><strong id="summary-downloads">—</strong></div>
+                <div><span>RISK SCORE</span><strong id="summary-score">—</strong></div>
+              </div>
+              <div class="panel-header timeline-header"><div><div class="panel-kicker">SESSION RECONSTRUCTION</div><h3>Attack timeline</h3></div><span class="range-label" id="playback-meta">WAITING</span></div>
+              <p class="command-tools-copy">Credentials, source addresses, URLs, and full shell commands are withheld.</p>
+              <div class="playback-toolbar"><button class="play-control" id="playback-toggle" type="button" disabled>▶ Play session</button><span class="playback-clock" id="playback-clock">00:00</span></div>
+              <ol class="playback-steps" id="playback-steps"><li class="empty-row">Waiting for an eligible session</li></ol>
+            </article>
+          </div>
         </section>
 
         <section class="rankings-grid" id="rankings" aria-label="Daily attack rankings">
@@ -112,6 +138,6 @@
         <footer class="page-footer"><a class="footer-brand" href="#top"><span class="brand-mark small"><span></span><span></span><span></span></span> CloudThreat Observatory</a><span>Independent project · Built for curiosity and security awareness</span><a href="https://db-ip.com" rel="noopener noreferrer" target="_blank">GeoIP by DB-IP</a><a href="/reports/">Monthly reports</a><a href="#top" class="back-top">BACK TO TOP ↑</a></footer>
       </main>
     </div>
-    <script src="app.js?v=12"></script>
+    <script src="app.js?v=14"></script>
   </body>
 </html>

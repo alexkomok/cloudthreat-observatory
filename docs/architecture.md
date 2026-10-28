@@ -47,9 +47,10 @@ redacted login-event feed every 15 seconds.
 The public payload contains:
 
 - Current UTC-day totals, total login attempts, and top country/password/username/port rankings.
+- Session counts, login/download/attacker totals, and up to ten high-scoring sessions, selected with category diversity when available.
 - A daily count and unique-source count for each of the most recent 90 days.
 - Daily counts of events invoking the tracked download tools.
-- One redacted session reconstruction and a daily unusual-session summary.
+- A daily featured-session summary.
 
 `metrics.json` contains no source address, session ID, full command, or download URL. The
 top eight password values are deliberately included as aggregate rankings
@@ -63,6 +64,11 @@ classification. It excludes passwords, usernames, session IDs, and raw events.
 The page labels these as observed network endpoints; enrichment is heuristic
 and does not identify an operator. `gci-public-threat-intel.timer` refreshes it
 every five minutes.
+
+The session archive groups failed logins and generic shell commands into
+collapsible batches. Session categories and risk scores use login, command,
+download, and privilege-change signals. They are heuristics for exploration,
+not confirmed threat-actor or malware-family attributions.
 
 The activity feed contains only the latest ten login event timestamps and a
 fixed success/failure category. It deliberately omits source addresses and

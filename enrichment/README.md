@@ -85,10 +85,12 @@ events, while `login_attempt_count` counts failed and successful logins.
 
 ## Session playback and monthly reports
 
-The public feed includes one redacted replay candidate and a daily unusual-session
-highlight. The selector scores command-tool use, shell activity, successful
-honeypot logins, and rejected logins. Replay steps omit source addresses,
-credentials, raw command strings, and download URLs.
+The public feed includes daily session statistics, up to ten high-scoring
+sessions selected with category diversity where available, and a featured-session highlight. Sessions are categorized from
+login, download, privilege-change, and command signals. Repeated login failures
+and generic shell commands are grouped into expandable timeline batches. The
+archive omits source addresses, credentials, session IDs, raw command strings,
+and download URLs.
 
 `monthly_report.py` generates a standalone HTML report for the previous complete
 UTC month. `gci-monthly-report.timer` runs at 00:30 UTC on the first of each
