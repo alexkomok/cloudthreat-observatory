@@ -288,6 +288,8 @@ function applyMetrics(data) {
   metricText('country-count', countries[0] ? `${number.format(countries[0].attempts)} attempts` : 'No country data');
   metricText('password', passwords[0]?.value || (passwords[0] ? '(blank)' : '—'));
   metricText('password-count', passwords[0] ? `${number.format(passwords[0].attempts)} attempts` : 'No password attempts');
+  metricText('username', usernames[0]?.value || (usernames[0] ? '(blank)' : '—'));
+  metricText('username-count', usernames[0] ? `${number.format(usernames[0].attempts)} attempts` : 'No username attempts');
   document.querySelector('#metric-date').textContent = `${data.date_utc || 'UTC TODAY'}`;
   renderList('countries-list', countries, (item) => item.name || item.code || 'Unknown', countries[0]?.attempts || 1);
   renderList('usernames-list', usernames, (item) => item.value || '(blank)', usernames[0]?.attempts || 1);
