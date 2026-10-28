@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh public Cowrie metrics every five minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30sec
+Unit=gci-public-metrics.service
+
+[Install]
+WantedBy=timers.target

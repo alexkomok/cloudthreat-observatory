@@ -1,0 +1,29 @@
+[Unit]
+Description=Enrich Cowrie events into a local SQLite database
+After=local-fs.target
+ConditionPathExists=/var/lib/gci-enrichment/geoip/current/country.mmdb
+ConditionPathExists=/var/lib/gci-enrichment/geoip/current/asn.mmdb
+
+[Service]
+Type=simple
+User=gci-enricher
+Group=gci-enricher
+ExecStart=/usr/bin/python3 /opt/gci-enrichment/worker.py
+Restart=on-failure
+RestartSec=5
+WorkingDirectory=/var/lib/gci-enrichment
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=POLL_SECONDS=2
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ReadOnlyPaths=/opt/cowrie/var/log/cowrie
+ReadWritePaths=/var/lib/gci-enrichment
+
+[Install]
+WantedBy=multi-user.target

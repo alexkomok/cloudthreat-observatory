@@ -1,0 +1,11 @@
+[Unit]
+Description=Publish the previous month's Cowrie threat report
+
+[Timer]
+OnCalendar=*-*-01 00:30:00 UTC
+AccuracySec=5min
+Unit=gci-monthly-report.service
+
+[Install]
+WantedBy=timers.target
+
