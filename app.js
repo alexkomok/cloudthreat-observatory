@@ -293,6 +293,7 @@ function applyMetrics(data) {
   document.querySelector('#metric-date').textContent = `${data.date_utc || 'UTC TODAY'}`;
   renderList('countries-list', countries, (item) => item.name || item.code || 'Unknown', countries[0]?.attempts || 1);
   renderList('usernames-list', usernames, (item) => item.value || '(blank)', usernames[0]?.attempts || 1);
+  renderList('passwords-list', passwords, (item) => item.value || '(blank)', passwords[0]?.attempts || 1);
   renderList('ports-list', ports, (item) => `${item.port}/TCP`, ports[0]?.attempts || 1);
   renderCommandTools(safeArray(data.command_tools));
   renderTimeline();

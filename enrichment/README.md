@@ -52,10 +52,10 @@ them directly from a public web root.
 The standalone page in the workspace reads `metrics.json` from the same web
 origin and refreshes it every five minutes. `public_metrics.py` builds the
 public projection from today's UTC events and writes only counts and ranked
-aggregate values: up to eight countries, usernames, and ports, and only the
-single most common password. It never exports source IPs, sessions, commands,
-or individual event records. Since the requested top password is intentionally
-public, its aggregate value is visible to page visitors.
+aggregate values: up to eight countries, usernames, passwords, and ports. It
+never exports source IPs, sessions, commands, or individual event records.
+Password values are untrusted honeypot submissions and are visible as daily
+aggregate rankings on the Daily rankings page.
 
 `public_activity.py` publishes a separate `activity.json` with the latest ten
 login event timestamps and fixed success/failure labels. It excludes source

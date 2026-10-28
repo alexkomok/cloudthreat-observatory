@@ -142,7 +142,7 @@ def main() -> None:
         passwords = [dict(row) for row in db.execute(
             """SELECT password AS value, COUNT(*) AS attempts FROM attacks
                WHERE event_time >= ? AND event_time < ? AND password IS NOT NULL AND password != ''
-               GROUP BY password ORDER BY attempts DESC, value LIMIT 1""",
+               GROUP BY password ORDER BY attempts DESC, value LIMIT 8""",
             (start, end),
         )]
         usernames = [dict(row) for row in db.execute(

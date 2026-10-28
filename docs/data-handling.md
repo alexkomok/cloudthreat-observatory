@@ -22,7 +22,7 @@ top passwords and usernames and also must not be served from a public web root.
 ## Public data
 
 The site and its JSON endpoints are public. `metrics.json` includes daily
-aggregates, country names, username counts, a single top-password aggregate,
+aggregates, country names, username counts, the top eight password aggregates,
 command-tool counts, and a daily event/source-count series. `activity.json`
 contains up to ten recent Cowrie login event timestamps and a fixed event type,
 refreshed every 30 seconds. It never includes source IPs, usernames, submitted
@@ -37,8 +37,9 @@ Monthly static reports omit source addresses, usernames, passwords, session
 identifiers, and raw command strings.
 
 Public top-password and username values are honeypot submissions, not verified
-credentials. They are still untrusted input and must continue to be rendered
-as text, never HTML or executable content.
+credentials. Password aggregates are shown on the Daily rankings page. These
+values are untrusted input and must continue to be rendered as text, never HTML
+or executable content.
 
 ## Network and access
 

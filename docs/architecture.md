@@ -51,10 +51,10 @@ The public payload contains:
 - Daily counts of events invoking the tracked download tools.
 - One redacted session reconstruction and a daily unusual-session summary.
 
-It contains no source address, session ID, raw password list, full command, or
-download URL. The top password is deliberately included because it is a stated
-observatory requirement. Do not add attacker profiles or raw events to this
-payload.
+It contains no source address, session ID, full command, or download URL. The
+top eight password values are deliberately included as aggregate rankings
+because they are a stated observatory requirement. Do not add attacker profiles
+or raw events to this payload.
 
 The activity feed contains only the latest ten login event timestamps and a
 fixed success/failure category. It deliberately omits source addresses and

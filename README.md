@@ -103,9 +103,9 @@ data, and enrichment. It is mode `0600` and owned by the dedicated
 `gci-enricher` account. `attacker_profiles` and `malware_commands` are private
 SQLite views.
 
-The public feed omits source addresses, session IDs, raw passwords, raw commands,
-and download URLs. The requested top password is published as a single aggregate
-value, and username rankings are aggregate counts. Playback labels redact
+The public feed omits source addresses, session IDs, raw commands, and download
+URLs. The top eight password values and username rankings are published as
+aggregate counts. Playback labels redact
 credentials and command content. Monthly reports contain aggregates only.
 
 See [Data handling and security](docs/data-handling.md) for the full boundary.
